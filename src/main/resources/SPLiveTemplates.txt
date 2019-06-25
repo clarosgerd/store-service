@@ -1,0 +1,11 @@
+/** Live Template for repository extends SP repository */
+/**
+ * @author: Jose Iriarte
+ */
+
+#if (${PACKAGE_NAME} && ${PACKAGE_NAME} != "")package ${PACKAGE_NAME};#end
+#parse("File Header.java")
+import edu.umss.storeservice.model.${NAME};
+
+public class ${NAME}Repository extends StoredProcedureRepositoryImpl<${NAME}> {
+}

@@ -2,15 +2,47 @@ package edu.umss.storeservice.model;
 
 import edu.umss.storeservice.dto.StatusDto;
 
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.util.Date;
 import java.util.Objects;
 
 @Entity
+@Table(name = "status")
+@NamedStoredProcedureQueries({
+        @NamedStoredProcedureQuery(
+                name = "GetAllStatus",
+                procedureName = "GetAllStatus",
+                resultClasses = Status.class
+        ),
+        @NamedStoredProcedureQuery(
+                name = "DeletestatusById",
+                procedureName = "DeletestatusById",
+                parameters = {
+                        @StoredProcedureParameter(mode = ParameterMode.IN, name = "id", type = Long.class),
+                        @StoredProcedureParameter(mode = ParameterMode.OUT, name = "result", type = Boolean.class)
+                }
+        ),
+        @NamedStoredProcedureQuery(
+                name = "GetstatusById",
+                procedureName = "GetstatusById",
+                parameters = {
+                        @StoredProcedureParameter(mode = ParameterMode.IN, name = "id", type = Long.class)
+                },
+                resultClasses = Status.class
+        ),
+        @NamedStoredProcedureQuery(
+                name = "SaveStatus",
+                procedureName = "SaveStatus",
+                parameters = {
+                        @StoredProcedureParameter(mode = ParameterMode.IN, name = "name", type = String.class),
+                        @StoredProcedureParameter(mode = ParameterMode.IN, name = "createdAt", type = Date.class),
+
+                },
+                resultClasses = Status.class
+        )
+})
 public class Status extends ModelBase<StatusDto>{
-   private String name;
+    private String name;
 
 
     @Basic
@@ -36,3 +68,4 @@ public class Status extends ModelBase<StatusDto>{
         return Objects.hash( name);
     }
 }
+

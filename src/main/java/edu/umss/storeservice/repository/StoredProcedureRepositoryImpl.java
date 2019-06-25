@@ -1,5 +1,6 @@
 package edu.umss.storeservice.repository;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umss.storeservice.model.ModelBase;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -7,8 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.StoredProcedureQuery;
+import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
-import java.util.List;
+import java.util.*;
 
 @Repository
 public abstract class StoredProcedureRepositoryImpl<T extends ModelBase> {
@@ -53,29 +55,30 @@ public abstract class StoredProcedureRepositoryImpl<T extends ModelBase> {
         return (Boolean) querySP.getOutputParameterValue("result");
     }
 
-    /*@Transactional
-    public Boolean save(T modelData){
+    @Transactional
+    public boolean save(T modelData){
         String typeName = (((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0]).getTypeName();
         typeName = typeName.substring(typeName.lastIndexOf('.') + 1);
-        StoredProcedureQuery  querySP = entityManager.createNamedStoredProcedureQuery("Save"+typeName+"");
+        StoredProcedureQuery  querySP = entityManager.createNamedStoredProcedureQuery("Save"+typeName);
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, Object> objectAsMap = objectMapper.convertValue(modelData, Map.class);
 
-        Class clazz = getClass().getGenericSuperclass().getClass();
-
-        Field[] fields = clazz.getDeclaredFields();
-        List<String> actualFieldNames = getFieldNames(fields);
-
-        querySP.setParameter("modelData", modelData);
+        for (Field field : modelData.getClass().getDeclaredFields()) {
+            field.setAccessible(true);
+            if( !field.getName().equals("id") && !field.getName().equals("updatedAt")) {
+                if (field.getType() == Boolean.class){
+                    querySP.setParameter(field.getName(), ( objectAsMap.getOrDefault(field.getName(), 0).equals(false) ? 0 : 1) );
+                } else {
+                    querySP.setParameter(field.getName(), objectAsMap.getOrDefault(field.getName(), 0));
+                }
+            }
+        }
+        querySP.setParameter("createdAt", new Date());
+        querySP.setParameter("version", 0);
 
         querySP.execute();
 
-        return (Boolean) querySP.getOutputParameterValue("result");
+        return true;
     }
-
-    private static List<String> getFieldNames(Field[] fields) {
-        List<String> fieldNames = new ArrayList<>();
-        for (Field field : fields)
-            fieldNames.add(field.getName());
-        return fieldNames;
-    }*/
 
 }
